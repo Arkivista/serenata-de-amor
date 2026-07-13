@@ -276,3 +276,14 @@ PYTHONPATH=. pytest tests/test_structured_analysis.py
 **Resultado esperado:** ao clicar em `Executar análise no navegador`, a página deve mostrar uma síntese com resultados `CONFORME` e `DIVERGENTE`, além de uma tabela detalhada com comentários sugeridos.
 
 **Limitação:** esse teste local replica a lógica principal em JavaScript para demonstração. O teste oficial do backend continua sendo feito pelo Python/FastAPI e pelos testes automatizados.
+
+#### Se o navegador pesquisar no Google em vez de abrir o protótipo
+
+Não digite apenas `samples/prototipo-led-navegador.html` na barra do navegador. Alguns navegadores tratam esse texto como busca.
+
+Para abrir corretamente, use uma destas formas:
+
+1. dê duplo clique no arquivo dentro da pasta `samples`;
+2. arraste o arquivo para uma janela do navegador;
+3. use `Ctrl+O` ou `Cmd+O` no navegador e selecione o arquivo;
+4. digite o caminho absoluto com `file:///`, por exemplo `file:///C:/caminho/para/o/projeto/samples/prototipo-led-navegador.html`.
