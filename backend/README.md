@@ -100,3 +100,7 @@ Endpoint de relatório HTML preliminar:
 ```bash
 POST /analyses/evaluate-structured/report-html
 ```
+
+## Forma recomendada de execução
+
+Para o MVP, a forma recomendada de execução é por contêineres Docker, usando `docker-compose.led.yml` na raiz do repositório. A instalação local com Python é útil para desenvolvimento, mas não deve ser a experiência principal do arquivista. O sistema ainda não é empacotado como executável único.
