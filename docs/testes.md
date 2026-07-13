@@ -262,3 +262,17 @@ PYTHONPATH=. pytest tests/test_structured_analysis.py
 
 - Se a contagem de resultados estiver errada, revise as regras antes de usar documentos reais.
 - Se o HTML não contiver os dados esperados, revise o gerador de relatório antes de evoluir para PDF ou DOCX.
+
+### Teste 11 — Testar sem instalar nada, abrindo um arquivo HTML local
+
+**Pasta para executar:** raiz do repositório.
+
+**Arquivo:** `samples/prototipo-led-navegador.html`.
+
+**Como testar:** abra esse arquivo diretamente no navegador, sem Docker e sem instalar Python.
+
+**Para que serve:** permite validar comigo, antes de subir o contêiner localmente, o comportamento esperado do motor de regras com dados fictícios estruturados.
+
+**Resultado esperado:** ao clicar em `Executar análise no navegador`, a página deve mostrar uma síntese com resultados `CONFORME` e `DIVERGENTE`, além de uma tabela detalhada com comentários sugeridos.
+
+**Limitação:** esse teste local replica a lógica principal em JavaScript para demonstração. O teste oficial do backend continua sendo feito pelo Python/FastAPI e pelos testes automatizados.

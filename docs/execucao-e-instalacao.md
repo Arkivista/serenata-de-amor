@@ -100,3 +100,13 @@ http://localhost:8080/
 ```
 
 A tela inicial permite executar uma análise estruturada fictícia e gerar um relatório HTML preliminar. Essa tela ainda não substitui a futura interface completa, mas permite validar o fluxo básico sem comandos `curl`.
+
+## Teste antes do contêiner
+
+Antes de subir o contêiner localmente, é possível abrir diretamente no navegador o arquivo:
+
+```text
+samples/prototipo-led-navegador.html
+```
+
+Esse arquivo não exige instalação, não envia dados para servidor e não usa IA. Ele serve apenas para demonstrar o comportamento esperado do motor de regras com dados fictícios estruturados.

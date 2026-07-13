@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Protótipo local LED — sem contêiner</title>
+  <style>
+    body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem; max-width: 1120px; }
+    textarea { width: 100%; min-height: 270px; font-family: ui-monospace, monospace; }
+    button { padding: 0.7rem 1rem; margin: 0.5rem 0.5rem 0.5rem 0; cursor: pointer; }
+    .aviso { border-left: 4px solid #8a5; padding: 0.75rem 1rem; background: #f5fff0; }
+    .erro { border-left-color: #b33; background: #fff0f0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #bbb; padding: 0.45rem; vertical-align: top; }
+    th { background: #eee; }
+    pre { white-space: pre-wrap; background: #f7f7f7; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Protótipo local LED — teste sem contêiner</h1>
+  <p class="aviso" id="status">Este arquivo roda diretamente no navegador. Ele não envia documentos, não usa servidor, não usa IA e não substitui a validação do arquivista.</p>
+
+  <h2>Dados estruturados fictícios</h2>
+  <p>Edite o JSON, se desejar, e clique em executar. O exemplo contém uma linha conforme e uma linha com descritor/destinação divergentes.</p>
+  <textarea id="payload"></textarea>
+  <br>
+  <button id="executar">Executar análise no navegador</button>
+  <button id="baixar">Baixar relatório HTML</button>
+
+  <h2>Síntese</h2>
+  <div id="sintese"></div>
+
+  <h2>Resultados detalhados</h2>
+  <div id="detalhes"></div>
+
+  <h2>JSON de saída</h2>
+  <pre id="json"></pre>
+
+  <script>
+    const RULE_VERSION = "0.1.0-local";
+    const ENGINE_VERSION = "0.1.0-local";
+    const MESSAGES = {
+      "LED-COD-001": "Rever o código de classificação informado, pois ele não foi localizado na tabela de temporalidade selecionada.",
+      "LED-DES-001": "Adequar o descritor ao código de classificação correspondente.",
+      "LED-TEMP-001": "Corrigir o prazo de guarda na fase corrente, conforme estabelecido na tabela de temporalidade.",
+      "LED-TEMP-003": "Corrigir o prazo de guarda na fase intermediária, conforme estabelecido na tabela de temporalidade.",
+      "LED-DEST-001": "Corrigir a destinação final, observando a previsão estabelecida na tabela de temporalidade aplicável.",
+      "LED-OBS-001": "Esclarecer o atendimento à condição especial prevista na tabela de temporalidade."
+    };
+
+    const sample = {
+      analysis_id: "analise-local-ficticia-1",
+      led_lines: [
+        {
+          line_id: "linha-1",
+          codigo: "023.15",
+          descritor: "Controle de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "eliminação"
+        },
+        {
+          line_id: "linha-2",
+          codigo: "023.15",
+          descritor: "Folhas de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "guarda permanente"
+        }
+      ],
+      approved_items: [
+        {
+          codigo: "023.15",
+          descritor: "Controle de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "eliminação",
+          observacao: null,
+          status_validacao: "aprovado"
+        }
+      ]
+    };
+
+    const payload = document.getElementById("payload");
+    const statusBox = document.getElementById("status");
+    const sintese = document.getElementById("sintese");
+    const detalhes = document.getElementById("detalhes");
+    const jsonOut = document.getElementById("json");
+    let ultimoResultado = null;
+    payload.value = JSON.stringify(sample, null, 2);
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLocaleLowerCase("pt-BR");
+    }
+
+    function normalizeCode(value) {
+      return String(value || "").replace(/\s+/g, " ").trim();
+    }
+
+    function compareText(ruleId, field, ledValue, expectedValue) {
+      const normalized = normalizeText(ledValue);
+      const expected = normalizeText(expectedValue);
+      let status = "DIVERGENTE";
+      if (!String(ledValue || "").trim()) status = "INFORMAÇÃO AUSENTE";
+      else if (normalized === expected) status = "CONFORME";
+      return {
+        rule_id: ruleId,
+        rule_version: RULE_VERSION,
+        field,
+        status,
+        led_value_original: ledValue || null,
+        led_value_normalized: normalized,
+        expected_value: expectedValue || null,
+        message: MESSAGES[ruleId],
+        requires_human_validation: status !== "CONFORME",
+        engine_version: ENGINE_VERSION
+      };
+    }
+
+    function evaluateLine(line, approvedItems) {
+      const item = approvedItems.find(candidate =>
+        candidate.status_validacao === "aprovado" && normalizeCode(candidate.codigo) === normalizeCode(line.codigo)
+      );
+      if (!item) {
+        return [{
+          rule_id: "LED-COD-001",
+          rule_version: RULE_VERSION,
+          field: "codigo",
+          status: "CÓDIGO NÃO LOCALIZADO",
+          led_value_original: line.codigo || null,
+          led_value_normalized: normalizeCode(line.codigo),
+          expected_value: null,
+          message: MESSAGES["LED-COD-001"],
+          requires_human_validation: true,
+          engine_version: ENGINE_VERSION
+        }];
+      }
+      const results = [{
+        rule_id: "LED-COD-001",
+        rule_version: RULE_VERSION,
+        field: "codigo",
+        status: "CONFORME",
+        led_value_original: line.codigo || null,
+        led_value_normalized: normalizeCode(line.codigo),
+        expected_value: item.codigo,
+        message: MESSAGES["LED-COD-001"],
+        requires_human_validation: false,
+        engine_version: ENGINE_VERSION
+      }];
+      results.push(compareText("LED-DES-001", "descritor", line.descritor, item.descritor));
+      results.push(compareText("LED-TEMP-001", "prazo_corrente", line.prazo_corrente, item.prazo_corrente));
+      results.push(compareText("LED-TEMP-003", "prazo_intermediario", line.prazo_intermediario, item.prazo_intermediario));
+      results.push(compareText("LED-DEST-001", "destinacao_final", line.destinacao_final, item.destinacao_final));
+      if (item.observacao) {
+        results.push({
+          rule_id: "LED-OBS-001",
+          rule_version: RULE_VERSION,
+          field: "observacao",
+          status: "NECESSITA ANÁLISE HUMANA",
+          led_value_original: null,
+          led_value_normalized: "",
+          expected_value: item.observacao,
+          message: MESSAGES["LED-OBS-001"],
+          requires_human_validation: true,
+          engine_version: ENGINE_VERSION
+        });
+      }
+      return results;
+    }
+
+    function evaluate(payloadData) {
+      const line_results = payloadData.led_lines.map(line => ({
+        line_id: line.line_id,
+        codigo: line.codigo || null,
+        results: evaluateLine(line, payloadData.approved_items)
+      }));
+      const summary = {};
+      for (const line of line_results) {
+        for (const result of line.results) {
+          summary[result.status] = (summary[result.status] || 0) + 1;
+        }
+      }
+      return { analysis_id: payloadData.analysis_id, line_results, summary };
+    }
+
+    function render(result) {
+      sintese.innerHTML = `<table><thead><tr><th>Resultado</th><th>Total</th></tr></thead><tbody>${Object.entries(result.summary).map(([status, total]) => `<tr><td>${status}</td><td>${total}</td></tr>`).join("")}</tbody></table>`;
+      const rows = [];
+      for (const line of result.line_results) {
+        for (const item of line.results) {
+          rows.push(`<tr><td>${line.line_id}</td><td>${line.codigo || ""}</td><td>${item.rule_id}</td><td>${item.field}</td><td>${item.status}</td><td>${item.led_value_original || ""}</td><td>${item.expected_value || ""}</td><td>${item.message}</td><td>${item.requires_human_validation ? "sim" : "não"}</td></tr>`);
+        }
+      }
+      detalhes.innerHTML = `<table><thead><tr><th>Linha</th><th>Código</th><th>Regra</th><th>Campo</th><th>Resultado</th><th>Valor na LED</th><th>Valor esperado</th><th>Comentário sugerido</th><th>Validação humana</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
+      jsonOut.textContent = JSON.stringify(result, null, 2);
+    }
+
+    document.getElementById("executar").addEventListener("click", () => {
+      try {
+        statusBox.classList.remove("erro");
+        ultimoResultado = evaluate(JSON.parse(payload.value));
+        render(ultimoResultado);
+        statusBox.textContent = "Análise executada no navegador. Nenhum dado foi enviado para servidor.";
+      } catch (error) {
+        statusBox.classList.add("erro");
+        statusBox.textContent = "Erro: " + error.message;
+      }
+    });
+
+    document.getElementById("baixar").addEventListener("click", () => {
+      if (!ultimoResultado) ultimoResultado = evaluate(JSON.parse(payload.value));
+      render(ultimoResultado);
+      const blob = new Blob([document.documentElement.outerHTML], { type: "text/html;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${ultimoResultado.analysis_id}-relatorio-prototipo.html`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  </script>
+</body>
+</html>
