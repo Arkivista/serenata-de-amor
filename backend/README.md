@@ -55,3 +55,32 @@ Para testar apenas normalização e regras:
 ```bash
 PYTHONPATH=. pytest tests/test_normalization.py tests/test_rules_engine.py
 ```
+
+## Exemplo de teste manual das regras pela API
+
+Com a API iniciada, envie dados estruturados fictícios para o endpoint de protótipo:
+
+```bash
+curl -X POST http://127.0.0.1:8000/rules/evaluate-line \
+  -H "Content-Type: application/json" \
+  -d '{
+    "led_line": {
+      "line_id": "linha-1",
+      "codigo": "023.15",
+      "descritor": "Folhas de frequência",
+      "prazo_corrente": "5 anos",
+      "prazo_intermediario": "não se aplica",
+      "destinacao_final": "guarda permanente"
+    },
+    "approved_items": [{
+      "codigo": "023.15",
+      "descritor": "Controle de frequência",
+      "prazo_corrente": "5 anos",
+      "prazo_intermediario": "não se aplica",
+      "destinacao_final": "eliminação",
+      "status_validacao": "aprovado"
+    }]
+  }'
+```
+
+Resultado esperado: uma lista de resultados indicando código conforme, descritor divergente, prazos conformes e destinação divergente.

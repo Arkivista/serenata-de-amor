@@ -219,3 +219,27 @@ PYTHONPATH=. pytest tests/test_normalization.py tests/test_rules_engine.py
 
 - Se o erro indicar divergência de resultado esperado, revise a regra correspondente antes de integrar com qualquer PDF.
 - Se o erro indicar importação, confirme que o comando foi executado dentro de `backend` com `PYTHONPATH=.`.
+
+### Teste 9 — Testar o endpoint de protótipo do motor de regras
+
+**Pasta para executar:** `backend`.
+
+**Pré-condição:** a API precisa estar iniciada com `uvicorn app.main:app --reload`.
+
+**Comando:**
+
+```bash
+curl -X POST http://127.0.0.1:8000/rules/evaluate-line \
+  -H "Content-Type: application/json" \
+  -d '{"led_line":{"line_id":"linha-1","codigo":"023.15","descritor":"Folhas de frequência","prazo_corrente":"5 anos","prazo_intermediario":"não se aplica","destinacao_final":"guarda permanente"},"approved_items":[{"codigo":"023.15","descritor":"Controle de frequência","prazo_corrente":"5 anos","prazo_intermediario":"não se aplica","destinacao_final":"eliminação","status_validacao":"aprovado"}]}'
+```
+
+**Para que serve:** permite testar o motor de regras sem depender ainda da extração de PDF.
+
+**Resultado esperado:** a resposta deve indicar `CONFORME` para código e prazos, `DIVERGENTE` para descritor e destinação final.
+
+**Se ocorrer erro:**
+
+- `curl: Failed to connect`: confirme se a API está rodando.
+- `422 Unprocessable Entity`: confira se o JSON contém `led_line` e `approved_items`.
+- Resultado inesperado: revise a regra antes de integrar com dados extraídos de PDF.
