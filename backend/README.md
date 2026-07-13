@@ -45,3 +45,13 @@ curl -F "document_kind=led" -F "file=@/caminho/para/led-ficticia.pdf;type=applic
 ```
 
 Resultado esperado: resposta JSON com `document_id`, `sha256`, tamanho, nome original, nome seguro e status `recebido_preservado_original`.
+
+## Protótipo de regras determinísticas
+
+Também já existe um motor de regras inicial que compara dados estruturados fictícios ou revisados manualmente. Ele ainda não lê PDFs, mas permite testar a lógica determinística de código, descritor, prazos, destinação e observações.
+
+Para testar apenas normalização e regras:
+
+```bash
+PYTHONPATH=. pytest tests/test_normalization.py tests/test_rules_engine.py
+```

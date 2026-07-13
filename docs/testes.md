@@ -200,3 +200,22 @@ curl -F "document_kind=led" -F "file=@/caminho/para/led-ficticia.pdf;type=applic
 - `400 Bad Request`: confira se `document_kind` é `led` e se o arquivo é PDF.
 - `curl: Failed to connect`: confirme se a API está rodando.
 - `ModuleNotFoundError`: instale as dependências com `pip install -r requirements/dev.txt`.
+
+### Teste 8 — Testar normalização e primeiras regras determinísticas
+
+**Pasta para executar:** `backend`.
+
+**Comando:**
+
+```bash
+PYTHONPATH=. pytest tests/test_normalization.py tests/test_rules_engine.py
+```
+
+**Para que serve:** valida a normalização controlada de textos e códigos, além das primeiras regras determinísticas do MVP com dados fictícios.
+
+**Resultado esperado:** os testes devem indicar que código correto fica conforme, descritor divergente é apontado, prazos corretos ficam conformes, destinação divergente é apontada e observação da tabela exige análise humana.
+
+**Se ocorrer erro:**
+
+- Se o erro indicar divergência de resultado esperado, revise a regra correspondente antes de integrar com qualquer PDF.
+- Se o erro indicar importação, confirme que o comando foi executado dentro de `backend` com `PYTHONPATH=.`.
