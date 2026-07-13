@@ -84,3 +84,19 @@ A decisão inicial é:
 ## Próximo passo técnico
 
 Para aproximar o protótipo do uso por arquivistas, o próximo passo é criar um frontend web simples ou uma página de protótipo que consuma os endpoints já existentes, permitindo testar análise estruturada sem usar comandos `curl`.
+
+## Como testar pelo navegador com contêiner
+
+Quando Docker estiver instalado, a equipe técnica poderá executar, na raiz do repositório:
+
+```bash
+docker compose -f docker-compose.led.yml up --build
+```
+
+Depois, o protótipo poderá ser acessado em:
+
+```text
+http://localhost:8080/
+```
+
+A tela inicial permite executar uma análise estruturada fictícia e gerar um relatório HTML preliminar. Essa tela ainda não substitui a futura interface completa, mas permite validar o fluxo básico sem comandos `curl`.

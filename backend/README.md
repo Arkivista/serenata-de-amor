@@ -104,3 +104,13 @@ POST /analyses/evaluate-structured/report-html
 ## Forma recomendada de execução
 
 Para o MVP, a forma recomendada de execução é por contêineres Docker, usando `docker-compose.led.yml` na raiz do repositório. A instalação local com Python é útil para desenvolvimento, mas não deve ser a experiência principal do arquivista. O sistema ainda não é empacotado como executável único.
+
+## Teste pelo navegador no contêiner
+
+Depois de iniciar com Docker Compose, acesse:
+
+```text
+http://localhost:8080/
+```
+
+A tela inicial permite executar uma análise estruturada fictícia e gerar relatório HTML preliminar sem usar `curl`.
