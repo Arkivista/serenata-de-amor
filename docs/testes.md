@@ -117,3 +117,45 @@ A etapa atual pode ser considerada validada quando:
 3. O escopo do MVP for aprovado.
 4. As regras mínimas forem confirmadas pela equipe arquivística.
 5. A arquitetura desacoplada for aceita antes da criação do backend e do frontend.
+
+## Testes após a criação da base técnica inicial
+
+A base técnica inicial adiciona um backend FastAPI mínimo. Ela ainda não analisa PDFs, mas já permite testar se a API pode ser importada e se as regras de configuração mantêm IA desligada por padrão.
+
+### Teste 4 — Executar testes unitários do backend
+
+**Pasta para executar:** `backend`.
+
+**Comando:**
+
+```bash
+PYTHONPATH=. pytest
+```
+
+**Para que serve:** executa os testes automatizados básicos do backend.
+
+**Resultado esperado:** os testes de configuração e contrato de IA devem passar.
+
+**Se ocorrer erro:**
+
+- Se aparecer `ModuleNotFoundError: No module named 'fastapi'`, instale as dependências em um ambiente virtual com `pip install -r requirements/dev.txt` dentro da pasta `backend`.
+- Se aparecer erro de importação de `app`, confirme se o comando foi executado dentro da pasta `backend` e se `PYTHONPATH=.` foi informado.
+
+### Teste 5 — Subir a API manualmente
+
+**Pasta para executar:** `backend`.
+
+**Comando:**
+
+```bash
+uvicorn app.main:app --reload
+```
+
+**Para que serve:** inicia a API de desenvolvimento.
+
+**Resultado esperado:** a API deve iniciar e o endereço `http://127.0.0.1:8000/health` deve retornar `status: ok`.
+
+**Se ocorrer erro:**
+
+- Se `uvicorn` não existir, instale as dependências com `pip install -r requirements/dev.txt`.
+- Se a porta 8000 estiver em uso, encerre o processo anterior ou use outra porta, por exemplo `uvicorn app.main:app --reload --port 8001`.
