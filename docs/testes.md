@@ -159,3 +159,44 @@ uvicorn app.main:app --reload
 
 - Se `uvicorn` não existir, instale as dependências com `pip install -r requirements/dev.txt`.
 - Se a porta 8000 estiver em uso, encerre o processo anterior ou use outra porta, por exemplo `uvicorn app.main:app --reload --port 8001`.
+
+### Teste 6 — Testar validação e armazenamento local sem API HTTP
+
+**Pasta para executar:** `backend`.
+
+**Comando:**
+
+```bash
+PYTHONPATH=. pytest tests/test_file_validation.py tests/test_local_storage.py
+```
+
+**Para que serve:** verifica se o sistema aceita somente extensões previstas, rejeita arquivos vazios, rejeita MIME type incompatível e preserva o conteúdo original em armazenamento local de teste.
+
+**Resultado esperado:** todos os testes devem passar.
+
+**Se ocorrer erro:**
+
+- Se aparecer erro de importação, confirme que o comando foi executado dentro de `backend`.
+- Se aparecer falha de validação, revise a extensão, o MIME type e o tamanho do arquivo usado no teste.
+
+### Teste 7 — Testar upload manual pela API
+
+**Pasta para executar:** `backend`.
+
+**Pré-condição:** a API precisa estar iniciada com `uvicorn app.main:app --reload`.
+
+**Comando:**
+
+```bash
+curl -F "document_kind=led" -F "file=@/caminho/para/led-ficticia.pdf;type=application/pdf" http://127.0.0.1:8000/documents
+```
+
+**Para que serve:** envia uma LED fictícia em PDF para o protótipo, calcula hash e preserva o arquivo original.
+
+**Resultado esperado:** resposta JSON com identificador, hash SHA-256, tamanho, nome original, nome seguro e status `recebido_preservado_original`.
+
+**Se ocorrer erro:**
+
+- `400 Bad Request`: confira se `document_kind` é `led` e se o arquivo é PDF.
+- `curl: Failed to connect`: confirme se a API está rodando.
+- `ModuleNotFoundError`: instale as dependências com `pip install -r requirements/dev.txt`.
