@@ -243,3 +243,22 @@ curl -X POST http://127.0.0.1:8000/rules/evaluate-line \
 - `curl: Failed to connect`: confirme se a API está rodando.
 - `422 Unprocessable Entity`: confira se o JSON contém `led_line` e `approved_items`.
 - Resultado inesperado: revise a regra antes de integrar com dados extraídos de PDF.
+
+### Teste 10 — Testar análise estruturada em lote e relatório HTML
+
+**Pasta para executar:** `backend`.
+
+**Comando:**
+
+```bash
+PYTHONPATH=. pytest tests/test_structured_analysis.py
+```
+
+**Para que serve:** valida um protótipo funcional sem PDF, comparando múltiplas linhas estruturadas com uma tabela aprovada fictícia e gerando HTML preliminar.
+
+**Resultado esperado:** o teste deve confirmar a síntese de resultados e a presença dos detalhes no relatório HTML.
+
+**Se ocorrer erro:**
+
+- Se a contagem de resultados estiver errada, revise as regras antes de usar documentos reais.
+- Se o HTML não contiver os dados esperados, revise o gerador de relatório antes de evoluir para PDF ou DOCX.

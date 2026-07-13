@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.analyses import router as analyses_router
 from app.api.documents import router as documents_router
 from app.api.health import router as health_router
 from app.api.rules import router as rules_router
@@ -19,5 +20,6 @@ app = FastAPI(
 )
 
 app.include_router(health_router)
+app.include_router(analyses_router)
 app.include_router(rules_router)
 app.include_router(documents_router)

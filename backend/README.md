@@ -84,3 +84,19 @@ curl -X POST http://127.0.0.1:8000/rules/evaluate-line \
 ```
 
 Resultado esperado: uma lista de resultados indicando código conforme, descritor divergente, prazos conformes e destinação divergente.
+
+## Protótipo funcional de análise estruturada
+
+Além de testar uma única linha, o backend já consegue executar uma análise em lote com várias linhas estruturadas e gerar um relatório HTML preliminar. Esse fluxo ainda usa dados digitados, importados ou fictícios, mas valida o comportamento do motor antes da extração de PDFs.
+
+Endpoint de análise em lote:
+
+```bash
+POST /analyses/evaluate-structured
+```
+
+Endpoint de relatório HTML preliminar:
+
+```bash
+POST /analyses/evaluate-structured/report-html
+```
