@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Protótipo LED — Análise estruturada</title>
+  <style>
+    body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem; max-width: 1100px; }
+    textarea { width: 100%; min-height: 260px; font-family: ui-monospace, monospace; }
+    button { padding: 0.7rem 1rem; margin: 0.5rem 0.5rem 0.5rem 0; cursor: pointer; }
+    .status { border-left: 4px solid #245; padding: 0.5rem 1rem; background: #eef4f8; }
+    iframe { width: 100%; min-height: 480px; border: 1px solid #bbb; }
+    code { background: #f2f2f2; padding: 0.1rem 0.3rem; }
+  </style>
+</head>
+<body>
+  <h1>Protótipo LED — Análise estruturada</h1>
+  <p>Esta tela permite testar o motor determinístico com dados fictícios estruturados. Ela ainda não extrai PDFs.</p>
+  <p class="status" id="status">Pronto para testar. Clique em “Executar análise”.</p>
+
+  <h2>Dados de teste</h2>
+  <p>Você pode editar o JSON abaixo antes de executar.</p>
+  <textarea id="payload"></textarea>
+  <br>
+  <button id="run-json">Executar análise e ver JSON</button>
+  <button id="run-html">Gerar relatório HTML preliminar</button>
+
+  <h2>Resultado JSON</h2>
+  <pre id="json-result"></pre>
+
+  <h2>Relatório HTML preliminar</h2>
+  <iframe id="html-result" title="Relatório HTML preliminar"></iframe>
+
+  <script>
+    const sample = {
+      analysis_id: "analise-ficticia-1",
+      led_lines: [
+        {
+          line_id: "linha-1",
+          codigo: "023.15",
+          descritor: "Controle de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "eliminação"
+        },
+        {
+          line_id: "linha-2",
+          codigo: "023.15",
+          descritor: "Folhas de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "guarda permanente"
+        }
+      ],
+      approved_items: [
+        {
+          codigo: "023.15",
+          descritor: "Controle de frequência",
+          prazo_corrente: "5 anos",
+          prazo_intermediario: "não se aplica",
+          destinacao_final: "eliminação",
+          status_validacao: "aprovado"
+        }
+      ]
+    };
+
+    const payload = document.getElementById("payload");
+    const statusBox = document.getElementById("status");
+    const jsonResult = document.getElementById("json-result");
+    const htmlResult = document.getElementById("html-result");
+    payload.value = JSON.stringify(sample, null, 2);
+
+    function readPayload() {
+      try {
+        return JSON.parse(payload.value);
+      } catch (error) {
+        throw new Error("JSON inválido: " + error.message);
+      }
+    }
+
+    async function postJson(url) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(readPayload())
+      });
+      if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}: ${await response.text()}`);
+      }
+      return response;
+    }
+
+    document.getElementById("run-json").addEventListener("click", async () => {
+      try {
+        statusBox.textContent = "Executando análise JSON...";
+        const response = await postJson("/analyses/evaluate-structured");
+        const data = await response.json();
+        jsonResult.textContent = JSON.stringify(data, null, 2);
+        statusBox.textContent = "Análise JSON concluída.";
+      } catch (error) {
+        statusBox.textContent = error.message;
+      }
+    });
+
+    document.getElementById("run-html").addEventListener("click", async () => {
+      try {
+        statusBox.textContent = "Gerando relatório HTML...";
+        const response = await postJson("/analyses/evaluate-structured/report-html");
+        const html = await response.text();
+        htmlResult.srcdoc = html;
+        statusBox.textContent = "Relatório HTML gerado.";
+      } catch (error) {
+        statusBox.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
